@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 import matplotlib.pyplot as plt
 from time import process_time
@@ -57,26 +58,50 @@ def num_sol(n):
     return num_sol
 
 
-#solutions
 import time
-t10_start = time.time()
+# Plot the average acc as a func of n
+avgacc  = []
+avgtime = []
+for n in range(10, 100):
+    X = np.linspace(0, 1, num=n+1)
 
-n=10
-exact_10=exact_sol=phi(np.linspace(0,1,n+1))
-num_10=num_sol(n)
-t10_stop = time.time()
-print("time elapsed for n=10:", t10_stop-t10_start) 
+    t_start = time.time()
+    num = num_sol(n)
+    t_stop = time.time()
 
-#function for difference of solutions
-diff_10=abs(exact_10-num_10)
+    exa = phi(X)
+    avgacc.append(np.linalg.norm(num-exa) / n)
+    avgtime.append(t_stop - t_start)
 
+plt.plot(avgacc, label='average acc over n')
+plt.plot(avgtime, label='average cpu-time over n')
+plt.legend()
+plt.xlabel('n')
+plt.ylabel('acc, cpu-time')
+plt.xscale("log")
+plt.yscale("log")
+plt.show()
 
-t100_start = time.time()
-n=100
-exact_100=exact_sol=phi(np.linspace(0,1,n+1))
-num_100=num_sol(n)
-t100_stop = time.time()
-print("time elapsed for n=100:", t100_stop-t100_start) 
-
-#function for difference of solutions
-diff_100=abs(exact_100-num_100)
+##solutions
+#t10_start = time.time()
+#
+#n=10
+#exact_10=exact_sol=phi(np.linspace(0,1,n+1))
+#num_10=num_sol(n)
+#t10_stop = time.time()
+#print("time elapsed for n=10:", t10_stop-t10_start) 
+#
+##function for difference of solutions
+#diff_10=abs(exact_10-num_10)
+#
+#
+#t100_start = time.time()
+#n=100
+#exact_100=exact_sol=phi(np.linspace(0,1,n+1))
+#num_100=num_sol(n)
+#t100_stop = time.time()
+#print("time elapsed for n=100:", t100_stop-t100_start) 
+#
+##function for difference of solutions
+#diff_100=abs(exact_100-num_100)
+#

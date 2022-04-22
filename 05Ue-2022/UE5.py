@@ -1,22 +1,19 @@
-from cProfile import label
-import numpy as np
-import matplotlib.pyplot as plt
-from time import process_time
+import  numpy as np
+import  matplotlib.pyplot as plt
+import  time
+
+from    cProfile    import label
+from    scipy       import special
+
 
 # global parameters
 n = 100
 A = 10
 B = 2*np.pi
-phi_A = 1
-phi_B = 0
 
 # define charge distribution
 def rho(x):
     return A*np.cos(B*x)
-
-# exact sol
-def phi(x):
-    return A/B**2*np.cos(B*x) - x + 1 -A/B**2
 
 # Thomas algorithm
 def TA(off, diag, sol):
@@ -37,7 +34,12 @@ def TA(off, diag, sol):
     return out
 
 
+# exact solution
+def exa_sol(x):
+    return A/B**2*np.cos(B*x) - x + 1 -A/B**2
 
+
+# numerical solution
 def num_sol(n):
     # define x domain
     X = np.linspace(0, 1, num=n-1)
@@ -58,50 +60,57 @@ def num_sol(n):
     return num_sol
 
 
-import time
-# Plot the average acc as a func of n
-avgacc  = []
-avgtime = []
-for n in range(10, 100):
+
+# Calculate the exact solution and plot the numerical solution against the
+# exact solution for n = 10 and 100
+
+n = 10
+X = np.linspace(0, 1, num=n+1)
+plt.xlabel('x')
+plt.ylabel(r'$\phi$(x)')
+plt.title('Potential $\phi$(x) over x')
+plt.plot(X, num_sol(n),  label="numerical, n = 10")
+
+n = 100
+X = np.linspace(0, 1, num=n+1)
+plt.plot(X, num_sol(n),  label="numerical, n = 100")
+plt.plot(X, exa_sol(X),  label="exact")
+plt.legend()
+plt.show()
+
+
+# Plot the average accuracy as a function of n
+# Plot the average cpu-time as a function of n
+
+# !! Here we use standard deviation as a measure for accuracy !!
+
+# arrays holding std and cpu time
+stds    = []
+times   = []
+
+for n in range(5, 5000):
     X = np.linspace(0, 1, num=n+1)
 
     t_start = time.time()
     num = num_sol(n)
     t_stop = time.time()
+    exa = exa_sol(X)
 
-    exa = phi(X)
-    avgacc.append(np.linalg.norm(num-exa) / n)
-    avgtime.append(t_stop - t_start)
+    # compute standard deviation
+    std_ = np.sqrt(1 / n * np.sum(np.square(num-exa)))
 
-plt.plot(avgacc, label='average acc over n')
-plt.plot(avgtime, label='average cpu-time over n')
+    # compute the cpu time
+    time_ = t_stop - t_start
+
+    stds.append(std_)
+    times.append(time_)
+
+plt.plot(stds,  label='sd' )
+plt.plot(times, label='ct' )
+plt.title('standard deviation (sd) & cpu time (ct) over n')
 plt.legend()
 plt.xlabel('n')
-plt.ylabel('acc, cpu-time')
+plt.ylabel('sd, ct')
 plt.xscale("log")
 plt.yscale("log")
 plt.show()
-
-##solutions
-#t10_start = time.time()
-#
-#n=10
-#exact_10=exact_sol=phi(np.linspace(0,1,n+1))
-#num_10=num_sol(n)
-#t10_stop = time.time()
-#print("time elapsed for n=10:", t10_stop-t10_start) 
-#
-##function for difference of solutions
-#diff_10=abs(exact_10-num_10)
-#
-#
-#t100_start = time.time()
-#n=100
-#exact_100=exact_sol=phi(np.linspace(0,1,n+1))
-#num_100=num_sol(n)
-#t100_stop = time.time()
-#print("time elapsed for n=100:", t100_stop-t100_start) 
-#
-##function for difference of solutions
-#diff_100=abs(exact_100-num_100)
-#

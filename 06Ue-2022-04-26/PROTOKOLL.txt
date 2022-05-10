@@ -1,0 +1,11 @@
+UE06
+Di 22 - 26.04.2022
+Helmberger, Dirnböck
+time needed: 5 hours
+
+UE06.py
+
+1.The problem is well conditioned, as 13 is relatively close to 1.
+2.Convergence ( 8.396636506091681e-07 ) was reached after  42  Iterations
+3.44  Steps are needed to reach error =  1e-06
+

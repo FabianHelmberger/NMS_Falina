@@ -49,9 +49,12 @@ eig = np.linalg.eigvals(A)
 
 
 y = np.zeros(3)
-plt.scatter(eig, y)
+plt.scatter(eig, y, color='black')
 plt.xlim([-20, 20])
 plt.ylim([-20, 20])
+plt.xlabel('Real Axis')
+plt.ylabel('Imaginary Axis')
+plt.title('Gershgorin circles')
 plt.show()
 
 
@@ -115,8 +118,12 @@ while (err > tol and k < max_iter):
     L.append(lambda_)
     E.append(err)
 print("Convergence (", err, ") was reached after ", k, " Iterations")
-plt.scatter(range(np.shape(L)[0]), L)
-plt.scatter(range(np.shape(E)[0]), E)
+plt.scatter(range(np.shape(L)[0]), L,  label='lambda')
+plt.scatter(range(np.shape(E)[0]), E, label='error')
+plt.xlabel('iterations')
+plt.ylabel('lambda and error')
+plt.title('convergence with power method')
+plt.legend()
 plt.show()
 
 
@@ -147,5 +154,6 @@ plt.plot(eigenvalues[:, 1], label=r'$\lambda_2$')
 plt.plot(eigenvalues[:, 2], label=r'$\lambda_3$')
 plt.xlabel('iteration')
 plt.ylabel('Eigenvalue')
+plt.title('QR algorithm')
 plt.legend()
 plt.show()

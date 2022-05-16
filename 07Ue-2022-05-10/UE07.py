@@ -42,8 +42,8 @@ def exp_Eu(r0, v0, dt, T):
         vel.append(v)
 
     pos = np.array(pos)
-    v = np.array(v)
-    return pos, v
+    vel = np.array(vel)
+    return pos, vel
 
 r0 = np.array([1, 0])
 v0 = np.array([0, -2*np.pi / 365])
@@ -143,8 +143,12 @@ def imp_Eu(r0, v0, dt, T):
     pos = [r0]
     vel = [v0]
     for t in range(int(1 / dt * T)):
-        r = r + dt * v
+        # r = r + dt * v
+        # v = v + dt * acc(r)
+
+
         v = v + dt * acc(r)
+        r = r + dt * v
         pos.append(r)
         vel.append(v)
     pos = np.array(pos)
@@ -162,7 +166,7 @@ pos2 = imp_Eu(r0, v0, dt2, T)[0]
 
 plt.xlabel('x')
 plt.ylabel('y')
-plt.title('Earth Orbit integrated using the implicit euler method')
+plt.title('Earth Orbit integrated using the semi - implicit euler method')
 plt.plot(pos1[:, 0], pos1[:, 1], label="dt = "+str(dt1)+' days')
 plt.plot(pos2[:, 0], pos2[:, 1], label="dt = "+str(dt2)+' days')
 plt.legend()
@@ -176,33 +180,43 @@ def E(pos, vel):
     return E
 
 dt = 0.01
+T = 365
+N = int(T/dt)
+
 r0 = np.array([1, 0])
 v0 = np.array([0, -2*np.pi / 365])
 
 
-pos_impE = imp_Eu(r0, v0, dt1, T)[0]
-vel_impE = imp_Eu(r0, v0, dt1, T)[1]
+pos_impE = imp_Eu(r0, v0, dt, T)[0]
+vel_impE = imp_Eu(r0, v0, dt, T)[1]
 
-pos_expE = exp_Eu(r0, v0, dt1, T)[0]
-vel_expE = exp_Eu(r0, v0, dt2, T)[1]
+pos_expE = exp_Eu(r0, v0, dt, T)[0]
+vel_expE = exp_Eu(r0, v0, dt, T)[1]
 
-pos_RK4 = RK4(r0, v0, dt1, T)[0]
-vel_RK4 = RK4(r0, v0, dt2, T)[1]
+pos_RK4 = RK4(r0, v0, dt, T)[0]
+vel_RK4 = RK4(r0, v0, dt, T)[1]
 
+def E(pos, vel, N):
+    E=np.zeros([N])
+    for i in range(0,N):
+        E[i] = m_e*(np.linalg.norm(vel[i]))**2 /2 - G*m_e*m_s/np.linalg.norm(pos[i])
+    return E
 
-E_impE=E(pos_impE, vel_impE)
-E_expE=E(pos_expE, vel_expE)
-#E_RK4=E(pos_RK4, vel_RK4)
-print(vel_RK4.shape)
-print(pos_RK4.shape)
-print(vel_RK4)
+E_impE=E(pos_impE, vel_impE, N)
+E_expE=E(pos_expE, vel_expE, N)
+E_RK4=E(pos_RK4, vel_RK4, N)
+# print(vel_RK4.shape)
+# print(pos_RK4.shape)
+# print(vel_RK4)
 
 
 plt.xlabel('t-steps')
 plt.ylabel('E')
-plt.title('Energies')
-plt.plot(E_impE, label='implicit Euler')
+plt.title('Energy')
+plt.plot(E_impE, label='semi-implicit Euler')
+plt.legend()
 plt.plot(E_expE, label='explicit Euler')
+plt.plot(E_RK4, label='RK4')
 plt.legend()
 plt.show()
 

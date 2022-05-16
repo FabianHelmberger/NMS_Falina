@@ -29,21 +29,25 @@ def exp_Eu(r0, v0, dt, T):
     r = r0
     v = v0
     pos = [r0]
+    vel = [v0]
     for t in range(int(1 / dt * T)):
         v_ = v
         v = v + dt * acc(r)
         r = r + dt * v_
         pos.append(r)
+        vel.append(v)
+
     pos = np.array(pos)
-    return pos
+    v = np.array(v)
+    return pos, v
 
 r0 = np.array([1, 0])
 v0 = np.array([0, -2*np.pi / 365])
 dt1 = 1
 dt2 = 0.01
 T = 365
-pos1 = exp_Eu(r0, v0, dt1, T)
-pos2 = exp_Eu(r0, v0, dt2, T)
+pos1 = exp_Eu(r0, v0, dt1, T)[0]
+pos2 = exp_Eu(r0, v0, dt2, T)[0]
 
 
 plt.xlabel('x')
@@ -63,6 +67,7 @@ def RK4(r0, v0, dt, T):
     r = r0
     v = v0
     pos = [r0]
+    vel = [v0]
 
     for t in range(int(1 / dt * 365 * 2)):
         k1 = acc(r)
@@ -76,16 +81,20 @@ def RK4(r0, v0, dt, T):
         phi = 1/6 * (k1 + 2*k2 + 2*k3 + k4)
         phi_v = 1/6 * (k1_v + 2*k2_v + 2*k3_v + k4_v)
 
-        v_ = v
-        v = v + dt * phi
         
+        
+        v = v + dt * phi
         r = r + dt * phi_v
-        pos.append(r)
-    pos = np.array(pos)
-    return pos
 
-pos1 = RK4(r0, v0, dt1, T)
-pos2 = RK4(r0, v0, dt2, T)
+
+        pos.append(r)
+        vel.append(v)
+    pos = np.array(pos)
+    vel = np.array(vel)
+    return pos, vel
+
+pos1 = RK4(r0, v0, dt1, T)[0]
+pos2 = RK4(r0, v0, dt2, T)[0]
 
 plt.xlabel('x')
 plt.ylabel('y')
@@ -94,6 +103,83 @@ plt.plot(pos1[:, 0], pos1[:, 1], label="dt = "+str(dt1)+' days')
 plt.plot(pos2[:, 0], pos2[:, 1], label="dt = "+str(dt2)+' days')
 plt.legend()
 plt.show()
+
+#impliziertes Eulerverfahren 
+
+def imp_Eu(r0, v0, dt, T):
+    r = r0
+    v = v0
+    pos = [r0]
+    vel = [v0]
+    for t in range(int(1 / dt * T)):
+        r = r + dt * v
+        v = v + dt * acc(r)
+        pos.append(r)
+        vel.append(v)
+    pos = np.array(pos)
+    vel = np.array(vel)
+    return pos, vel
+
+r0 = np.array([1, 0])
+v0 = np.array([0, -2*np.pi / 365])
+dt1 = 1
+dt2 = 0.01
+T = 365
+pos1 = imp_Eu(r0, v0, dt1, T)[0]
+pos2 = imp_Eu(r0, v0, dt2, T)[0]
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Earth Orbit integrated using the implicit euler method')
+plt.plot(pos1[:, 0], pos1[:, 1], label="dt = "+str(dt1)+' days')
+plt.plot(pos2[:, 0], pos2[:, 1], label="dt = "+str(dt2)+' days')
+plt.legend()
+plt.show()
+
+
+# Energien 
+dt = 0.01
+r0 = np.array([1, 0])
+v0 = np.array([0, -2*np.pi / 365])
+
+
+pos_impE = imp_Eu(r0, v0, dt1, T)[0]
+vel_impE = imp_Eu(r0, v0, dt1, T)[1]
+
+pos_expE = exp_Eu(r0, v0, dt1, T)[0]
+vel_expE = exp_Eu(r0, v0, dt2, T)[1]
+
+pos_RK4 = RK4(r0, v0, dt1, T)[0]
+vel_RK4 = RK4(r0, v0, dt2, T)[1]
+
+def E(pos, vel):
+    E = m_e*vel/2 - G*m_e*m_s/np.abs(pos)
+    return E
+
+E_impE=E(pos_impE, vel_impE)
+E_expE=E(pos_expE, vel_expE)
+#E_RK4=E(pos_RK4, vel_RK4)
+print(vel_RK4.shape)
+print(pos_RK4.shape)
+print(vel_RK4)
+
+
+plt.xlabel('t-steps')
+plt.ylabel('E')
+plt.title('Energies')
+plt.plot(E_impE, label='implicit Euler')
+plt.plot(E_expE, label='explicit Euler')
+#plt.plot(E_RK4, label='RK4')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
 
 
 

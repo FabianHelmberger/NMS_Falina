@@ -105,36 +105,6 @@ plt.legend()
 plt.show()
 
 
-#semi-implizierter Euler
-
-def SIM_Eu(r0, v0, dt, T):
-    r = r0
-    v = v0
-    pos = [r0]
-    vel = [v0]
-    for t in range(int(1 / dt * T)):
-        v = v + dt * acc(r)
-        r = r + dt * v
-        pos.append(r)
-        vel.append(v)
-    pos = np.array(pos)
-    vel = np.array(vel)
-    return pos, vel
-
-v0 = np.array([0, -0.017326])
-r0 = np.array([1, 0])
-dt = 1
-T = 365
-
-pos = SIM_Eu(r0, v0, dt, T)[0]
-
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Earth Orbit integrated with dt = '+str(dt)+' using semi-implicit Euler')
-plt.plot(pos[:, 0], pos[:, 1])
-plt.show()
-
-
 #impliziertes Eulerverfahren 
 
 def imp_Eu(r0, v0, dt, T):
@@ -143,10 +113,6 @@ def imp_Eu(r0, v0, dt, T):
     pos = [r0]
     vel = [v0]
     for t in range(int(1 / dt * T)):
-        # r = r + dt * v
-        # v = v + dt * acc(r)
-
-
         v = v + dt * acc(r)
         r = r + dt * v
         pos.append(r)
@@ -205,10 +171,6 @@ def E(pos, vel, N):
 E_impE=E(pos_impE, vel_impE, N)
 E_expE=E(pos_expE, vel_expE, N)
 E_RK4=E(pos_RK4, vel_RK4, N)
-# print(vel_RK4.shape)
-# print(pos_RK4.shape)
-# print(vel_RK4)
-
 
 plt.xlabel('t-steps')
 plt.ylabel('E')

@@ -1,0 +1,8 @@
+UE07 Gruppe Di26 - 10.05.2022
+
+Helmberger, Dirnböck 
+Time needed: 7 hours
+
+UE07.py
+Tage bis zum Mars:  [255.2]
+

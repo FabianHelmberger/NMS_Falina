@@ -105,7 +105,7 @@ plt.legend()
 plt.show()
 
 
-#semi-implizierter Euler
+#semi-impliziertes Eulerverfahren
 
 def SIM_Eu(r0, v0, dt, T):
     r = r0

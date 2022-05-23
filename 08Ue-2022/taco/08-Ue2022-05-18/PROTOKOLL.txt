@@ -1,0 +1,12 @@
+﻿Protokoll 
+Datum:18.05.2022
+Gruppe:mi03
+Namen:Radakovits Tobias, Schnee Julius
+
+Zeitaufwand:
+5h30min
+
+
+Dateien: constants.f90, numerow.f90, poisson.f90, schroedinger.f90, helium.f90, vergleich.png
+
+

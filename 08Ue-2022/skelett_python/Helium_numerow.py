@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy import E
-
+import math
 
 ################################################################################################
 ############################### NUMEROW RELATED FUNCTIONS ######################################
@@ -18,21 +18,21 @@ from sympy import E
 #!
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
-def numerow_from_outside(y,g,s,n,dr):
+def numerow_from_inside(u,g,s,n,dr):
 #!###########################################################
 #!   TODO: ENTER APPROPRIATE NUMEROW EXPRESSION HERE
 #!###########################################################
-    for i in np.arange(n-2, 1, -1):
-        y[i+1]=(2*y[i]*(1-5*dr**2*g[i]/12)-y[i-1]*(1+dr**2*g[i-1]/12)+dr**2*(s[i+1]+10*s[i]+s[i-1])/12)/(1+dr**2*g[i+1]/12)
-    return y
+    for i in range(1,n-1):
+        u[i+1] = (1/(1+((dr**2)/12)*g[i+1]))*((2*u[i]*(1-((5/12)*(dr**2)*g[i])))-(u[i-1]*(1+(((dr**2)/12)*g[i-1])))+(((dr**2)/12)*(s[i+1]+10*s[i]+s[i-1])))   
+    return u   
 
-def numerow_from_inside(y,g,s,n,dr):
+def numerow_from_outside(u,g,s,n,dr):
 #!###########################################################
 #!   TODO: ENTER APPROPRIATE NUMEROW EXPRESSION HERE
 #!###########################################################
-    for i in np.arange(2, n-1):
-        y[i-1]=-(y[i+1]*(1+dr**2*g[i+1]/12)-2*y[i]*(1-5*dr**2*g[i]/12)-dr**2*(s[i+1]+10*s[i]+s[i-1])/12)/(1+dr**2*g[i-1]/12)
-    return y
+    for i in range(n-2,0,-1):
+       u[i-1] = (1/(1+((dr**2)/12)*g[i-1]))*((2*u[i]*(1-((5/12)*(dr**2)*g[i])))-(u[i+1]*(1+(((dr**2)/12)*g[i+1])))+(((dr**2)/12)*(s[i+1]+10*s[i]+s[i-1])))   
+    return u   
 
 
 #######################################################################################
@@ -65,7 +65,7 @@ def calc_urho(u,r,n):
 #!   TODO: CALCULATE CHARGE DENSITY HERE (2 lines)
 #!###########################################################
     for i in range(n):
-        urho[i] = u[i]**2 / r[i]
+        urho[i] = u[i]**2
     return urho
 
 
@@ -74,30 +74,36 @@ def solve_poisson(upsi,erep,r,n,dr):
 
     # array needed for numerow method
     g=np.zeros(n)
-
+    s=np.zeros(n)
     upot=np.zeros(n)
 #!###########################################################
 #!   TODO: CALL THE THREE REQUIRED FUNCTIONS IN THE CORRECT ORDER
 #!         TO OBTAIN THE SOLUTION FOR THE POISSON EQUATION HERE (3 lines)
 #!###########################################################
-    urho = calc_urho(upsi, r, n)
-    upot = init_upot(r, n)
-    y = numerow_from_outside(upsi, g, -urho, n, dr)
+    urho=calc_urho(upsi,r,n)
     
+    for i in range(n):
+        s[i]=-4.*math.pi*urho[i]*r[i]
+        
+    upot=init_upot(r,n)
+    upot=numerow_from_outside(upot,g,s,n,dr)
+    for i in range(n):
+        upot[i]=upot[i]/r[i]
+
     erep=0.0
 #!###########################################################
 #!   TODO: ENTER APPROPRIATE EXPRESSION FOR
 #!         REPULSION ENERGY HERE
 #!###########################################################
-    for i in np.arange(0,n-1,1):
-        erep = erep + urho[i] * upot[i]
-
+    f=np.zeros(n)
+    for i in range(0,n):
+        f[i]=4.*math.pi*r[i]*r[i]*urho[i]*upot[i]
+               
+    erep=trapezoid(f,r,dr)
+    
     print('Electron repulsion energy:',erep)
     
-    for i in np.arange(0,n-1,1):
-        pot[i]=upot[i]/r[i]
-    
-    return pot
+    return upot,erep
 
 
 #######################################################################################
@@ -148,16 +154,20 @@ def init_u_for_se(r,z,n):
 #!  Normalize U properly
 #!
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+from scipy.integrate import trapezoid
+from numpy.linalg import norm
 
-def normalize_u(u,r,z,n,dr):
-    norm=0
+def normalize_u(u):
 #!###########################################################
 #!   TODO: Complete this routine to normalize U() (approximately 3 lines)
 #!###########################################################
+    f=np.zeros(n)
     for i in range(n):
-        norm = norm + dr*u[i]**2
+        f[i]=4*math.pi*(r[i]*r[i])*u[i]*u[i]
     
-    return u / np.sqrt(norm)
+    norm=trapezoid(f,r,dr)
+    return u/np.sqrt(norm)
+
 
 #################################### Count nodes in function u ################################
 
@@ -166,7 +176,7 @@ def count_nodes(u,n):
 #!###########################################################
 #!   TODO: Complete this function to compute the number of nodes of the function U() (approximately 3 lines)
 #!###########################################################
-    for i in range(0, n-1):
+    for i in range(n-1):
         if (u[i] * u[i+1] < 0):
             nodes = nodes + 1
     return nodes
@@ -175,45 +185,52 @@ def count_nodes(u,n):
 ############################ Solve radial Schroedinger equation for a given potential ##########
 ############################ emin and emax specifiy energy window  ##########
 
-def solve_se(z,pot,n,tol,r,dr):
+def solve_se(z,pot,n,tol, r):
 ############# initialize energy window in which the ground state energy should be searched for
     emax=0.0
     emin=-20.0
+    e=(emax+emin)/2
 # arrays used for numerow method
     s=np.zeros(n)
-    g=np.zeros(n)
+    g=calc_g(e,z,r,pot,n)
+#how many iterations where neccessary
+    Iterations=0
+    
 # initialize radial wavefunction
-    u=init_u_for_se(r,z,n)
-# guess for energy of wavefunction
+
+    u_init=init_u_for_se(r,z,n)
+    #print(dir(u))
+    u=numerow_from_inside(u_init,g,s,n,dr)
+    
+    nodes=count_nodes(u,n)
+    
+    for i in range(1,100):
+        if count_nodes(u,n)>0:
+            emax = e
+            e = (emax + emin) / 2.0
+            g = calc_g(e, z, r, pot, n)
+            u = numerow_from_inside(u, g, s, n, dr)
+            #print(count_nodes(u, n), emin)
+        elif count_nodes(u,n)==0:
+            emin = e
+            e = (emax + emin) / 2.0
+            g = calc_g(e, z, r, pot, n)
+            u = numerow_from_inside(u, g, s, n, dr)
+            #print(count_nodes(u, n), emin
+          
+        #print(nodes)
+           
+        Iterations=Iterations+1   
+        
+    psi=u/r    
+    emax=e
     e=(emax+emin)/2.0
     
-#!###########################################################
-#!   TODO: CONSTRUCT A WHILE LOOP THAT FINDS THE SOLUTION TO THE SCHROEDINGER EQUATION:
-#
-#!         CALL THE REQUIRED ROUTINES IN THE CORRECT ORDER
-#!         TO OBTAIN THE SOLUTION FOR THE SCHROEDINGER EQUATION FOR EACH TRIAL ENERGY
-#!         (about 6 lines)
-#!
-#!         ONCE THE WAVEFUNCTIOM HAS BEEN OBTAINED COMPUTE ITS NUMBER OF NODES AND
-#!         MODIFY EMIN and EMAX ACCORDINGLY. COMPUTE NEW TRIAL ENERGY
-#!         (about 4 lines lines)
-#!###########################################################
-    zs = 0
-    while (np.abs(e-zs) > tol):
-        zs = e
-        u = init_u_for_se(r, z, n)
-        g = calc_g(e, z, r, pot, n)
-        u = numerow_from_inside(u, g, s, n, dr)
-        u = normalize_u(u,r,z,n,dr)
-
-        nodes = count_nodes(u, n)
-        if nodes > 1:
-            emin = e
-        else:
-            emax = e
-        e=(emax+emin)/2.0
-    print('Schroedinger equation energy=',e)
-    return u
+    print('Groundstate Energy=',e)
+    
+    psi_norm=normalize_u(psi)
+    
+    return psi_norm,e
 
 
 
@@ -225,9 +242,14 @@ dr=abs(rmax-rmin)/(n-1)
 
 ############# initialize radial grid points
 r = np.linspace(rmin,rmax,n)
+
 ############# charge of helium core
 z=2.0
 
+
+
+
+# Question 1
 ############# initialize electronic radial potential to zero for He+
 pot = np.zeros(n)
 
@@ -235,18 +257,49 @@ pot = np.zeros(n)
 tol=0.000001
 
 ############# solve radial Schroedinger equation for radial wavefunction
-upsi=solve_se(z, pot, n, tol, r, dr)
-
-erep=0.0
-pot=solve_poisson(upsi, erep, r, n, dr)
-
-for iteration in np.arange(0,10,1):
-    print('Iteration ',iteration,' of self-consistent field cycle.')
-    upsi=solve_se(z,pot,n,tol,r,dr)
-    pot=solve_poisson(upsi,erep,r,n,dr)
-
-
-plt.figure()
-plt.plot(r,upsi/r)
+upsi, e=solve_se(z,pot,n,tol,r)
+plt.plot(r,upsi,label='$\Psi$')
+plt.title('Upsi for Pot=0')
+plt.legend()
 plt.show()
 
+
+# Question 2
+erep=0.0
+upot,erep=solve_poisson(upsi, erep, r, n, dr)
+
+plt.plot(r,upot,label='$\Phi$')
+plt.plot(r,upsi,label='$\Psi$')
+plt.legend()
+plt.show()
+
+# Question 3
+erep=0.0
+upsi,e=solve_se(z,pot,n,tol,r)
+e_1=100
+
+
+pot,erep=solve_poisson(upsi,erep,r,n,dr)
+epsilon=10**(-6)
+iteration=0
+
+while(np.abs(e-e_1)>epsilon):
+
+    e_1=e
+    print('Iteration ',iteration,' of self-consistent field cycle.')
+    upsi,e=solve_se(z,pot,n,tol,r)
+    pot,erep=solve_poisson(upsi,erep,r,n,dr)
+    iteration=iteration+1
+
+E_ges=2*e-erep
+print(E_ges)
+
+
+print('Groundstate He:',E_ges,'E_H')
+
+upot,erep=solve_poisson(upsi,erep,r,n,dr)
+plt.plot(r,upot,label='$\Phi$')
+plt.plot(r,upsi,label='$\Psi$')
+plt.legend()
+plt.plot(r,upsi/r)
+plt.show()

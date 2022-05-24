@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     for(j=0;j<L;j++)
       {
 	/* Loop over nearest neighbors */
-	for(k=0;k<4;k++)            
+	for(k=0;k<4;k++)          
 	  {
 	    Inew = i + Inn[k];       
 	    Jnew = j + Jnn[k];

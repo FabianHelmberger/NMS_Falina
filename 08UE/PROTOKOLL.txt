@@ -3,7 +3,7 @@ Helmberger, Dirnböck
 Time needed: 8 hours
 
 files: 
-UE08.py
+Helium_numerow.py
 
 The groundstate energy of HE+ follows Rydberg formula.
 

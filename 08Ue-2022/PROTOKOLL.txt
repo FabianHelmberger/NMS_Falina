@@ -1,0 +1,8 @@
+UE 08 Gruppe Di26 - 24.05.2022
+Helmberger, Dirnböck 
+Time needed: 8 hours
+
+files: 
+UE08.py
+
+

@@ -3,6 +3,12 @@ UE07 Gruppe Di26 - 10.05.2022
 Helmberger, Dirnböck 
 Time needed: 7 hours
 
+files: 
 UE07.py
+exp_EU.png
+RK4.png
+semexp_EU.png
+energies.png
+
 Tage bis zum Mars:  [255.2]
 

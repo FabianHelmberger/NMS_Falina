@@ -257,49 +257,61 @@ pot = np.zeros(n)
 tol=0.000001
 
 ############# solve radial Schroedinger equation for radial wavefunction
-upsi, e=solve_se(z,pot,n,tol,r)
-plt.plot(r,upsi,label='$\Psi$')
-plt.title('Upsi for Pot=0')
-plt.legend()
-plt.show()
+print('now solving SE for He...')
+upsi    =   solve_se(z,pot,n,tol,r)[0]
+e       =   solve_se(z,pot,n,tol,r)[1]
+
+#plt.plot(r,upsi,label='$\Psi$')
+#plt.title('Upsi for Pot=0')
+#plt.legend()
+#plt.show()
 
 
 # Question 2
-erep=0.0
-upot,erep=solve_poisson(upsi, erep, r, n, dr)
+print('now solving PE for HE...')
+erep    =   0.0
+upot    =   solve_poisson(upsi, erep, r, n, dr)[0]
+erep    =   solve_poisson(upsi, erep, r, n, dr)[1]
 
-plt.plot(r,upot,label='$\Phi$')
-plt.plot(r,upsi,label='$\Psi$')
-plt.legend()
-plt.show()
+#plt.plot(r,upot,label='$\Phi$')
+#plt.plot(r,upsi,label='$\Psi$')
+#plt.legend()
+#plt.show()
 
 # Question 3
-erep=0.0
-upsi,e=solve_se(z,pot,n,tol,r)
-e_1=100
+upsi    =   solve_se(z,pot,n,tol,r)[0]
+e       =   solve_se(z,pot,n,tol,r)[1]
+e_1     =   np.inf
 
 
-pot,erep=solve_poisson(upsi,erep,r,n,dr)
-epsilon=10**(-6)
-iteration=0
+pot     =   solve_poisson(upsi,erep,r,n,dr)[0]
+erep    =   solve_poisson(upsi,erep,r,n,dr)[1]
+iter    =   0
+print("\n")
+print("starting loop for HE")
+while(np.abs(e-e_1)>tol):
 
-while(np.abs(e-e_1)>epsilon):
+    e_1 =   e
+    print('Iteration ',iter,' of self-consistent field cycle.')
+    upsi    =   solve_se(z,pot,n,tol,r)[0]
+    e       =   solve_se(z,pot,n,tol,r)[1]
+    pot     =   solve_poisson(upsi,erep,r,n,dr)[0]
+    erep    =   solve_poisson(upsi,erep,r,n,dr)[1]
+    iter=iter+1
 
-    e_1=e
-    print('Iteration ',iteration,' of self-consistent field cycle.')
-    upsi,e=solve_se(z,pot,n,tol,r)
-    pot,erep=solve_poisson(upsi,erep,r,n,dr)
-    iteration=iteration+1
-
-E_ges=2*e-erep
-print(E_ges)
-
+E_ges   =   2*e-erep
 
 print('Groundstate He:',E_ges,'E_H')
 
-upot,erep=solve_poisson(upsi,erep,r,n,dr)
-plt.plot(r,upot,label='$\Phi$')
-plt.plot(r,upsi,label='$\Psi$')
-plt.legend()
-plt.plot(r,upsi/r)
-plt.show()
+upot    =   solve_poisson(upsi,erep,r,n,dr)[0]
+erep    =   solve_poisson(upsi,erep,r,n,dr)[1]
+
+#plt.plot(r,upot,label='$\Phi$')
+#plt.plot(r,upsi,label='$\Psi$')
+#plt.legend()
+#plt.plot(r,upsi/r)
+#plt.show()
+
+
+
+

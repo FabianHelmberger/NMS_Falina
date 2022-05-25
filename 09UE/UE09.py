@@ -24,7 +24,7 @@ def  energy (i,j, grid, spin_current):
             energy = energy - 1 
         else:
             energy = energy + 1 
-    return energy
+    return J*energy
 
 def sweep(grid, N, Temp):
     for n in range(N):
@@ -56,8 +56,6 @@ Jinn = np.array([1, -1, 0, 0])
 random = np.random.default_rng()
 Temps = [1,2,3,4]
 k_b = k
-N_warm_up = 2
-N_mess = 2
 Anzahl_Gitterplätze = L*L
 grid = rand_init(L)
 mag_T = np.zeros( len(Temps) )

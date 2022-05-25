@@ -46,22 +46,31 @@ def sweep(grid, N, Temp):
 
 
 #main
-L = 20              # Lattice size (i.e. NMAX x NMAX) 
+random = np.random.default_rng()
+
+
+# Parameters than can be changed
+
+L = 20              # Lattice size 
+size = np.array([4,8])
+Temps = [1,2,3,4]
 J = -1.0            # Ising lattice coupling constant 
 			        # J > 0: Ferromagnetic 
 			        # J < 0: Antiferromagnetic
+
+
+# Initialisation for code
 H = 0.0             # Ising lattice field strength 
-Inn = np.array([0, 0, 1, -1])
-Jinn = np.array([1, -1, 0, 0])
-random = np.random.default_rng()
-Temps = [1,2,3,4]
 k_b = k
 Anzahl_Gitterplätze = L*L
+Inn = np.array([0, 0, 1, -1])
+Jinn = np.array([1, -1, 0, 0])
 grid = rand_init(L)
 mag_T = np.zeros( len(Temps) )
 mag_square_T = np.zeros( len(Temps) )
 mag_fourth_T = np.zeros( len(Temps) )
-size = np.array([4,8])
+binder = np.zeros( len(Temps) )
+
 
 for ind in range(len(size)):
     N_warm_up = size[ind]
@@ -87,8 +96,31 @@ for ind in range(len(size)):
         mag_T[temperatures] = mag/N_mess
         mag_square_T[temperatures] = mag_square/N_mess
         mag_fourth_T[temperatures] = mag_fourth/N_mess
+        # Binder Kumulante:
+        binder[temperatures] = 1 - 1/3 * mag_square_T[temperatures]/(mag_square_T[temperatures] * mag_square_T[temperatures])
 
     pl.plot(mag_T)
+    pl.title("magnetisation over temp; System size = " +str(N_mess)+   "x" + str(N_warm_up))
+    pl.xlabel("Temperature")
+    pl.ylabel("magnetisation")
+    pl.show()
+
+    pl.plot(mag_square_T)
+    pl.title("magnetisation squared over temp; System size = " +str(N_mess)+   "x" + str(N_warm_up))
+    pl.xlabel("Temperature")
+    pl.ylabel("magnetisation squared")
+    pl.show()
+
+    pl.plot(mag_fourth_T)
+    pl.title("magnetisation to the fourth power over temp; System size = " +str(N_mess)+   "x" + str(N_warm_up))
+    pl.xlabel("Temperature")
+    pl.ylabel("magnetisation^4")
+    pl.show()
+
+    pl.plot(binder)
+    pl.title("Binder-Kumulante; System size = " +str(N_mess)+   "x" + str(N_warm_up))
+    pl.xlabel("Temperature")
+    pl.ylabel("Binder-Kumulante")
     pl.show()
 
 

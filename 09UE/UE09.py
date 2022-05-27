@@ -3,6 +3,10 @@ import numpy as np
 from scipy.constants import k
 import matplotlib.pyplot as pl
 
+Dimension = 2
+Next_neighbours = 2 * Dimension
+
+Relative_neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
 # initialise random lattice
 def rand_init(L):
@@ -10,20 +14,21 @@ def rand_init(L):
     return grid
 
 
-def  energy (i,j, grid, spin_current):
-    dim = np.shape(grid)[0]
+def energy (x, y, grid):
+    dim_x = np.shape(grid)[0]
+    dim_y = np.shape(grid)[1]
     energy = 0
-    
 
-    for ind in range(len(Inn)):
-        i = i + Inn[ind]
-        j = j + Jinn[ind]
+    my_spin = grid[x,y]
+    for rn in Relative_neighbours:
+        x, y = x + rn[0], y + rn[1]
+        equal = (my_spin == grid[(dim_x + x)%dim_x][(dim_y + y)%dim_y])
 
-        neighbour_value = grid[ (i+dim)%dim ][ (j+dim)%dim ] 
-        if neighbour_value != spin_current: 
+        if equal    : 
             energy = energy - 1 
-        else:
+        if not equal:
             energy = energy + 1 
+
     return J*energy
 
 def sweep(grid, N, Temp):

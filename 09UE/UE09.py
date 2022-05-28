@@ -2,8 +2,9 @@ from re import T
 import numpy as np
 from scipy.constants import k
 import matplotlib.pyplot as pl
-k = 1
+import copy 
 
+k = 1
 Relative_neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
 # initialise random lattice
@@ -12,8 +13,9 @@ def rand_init(L):
     return grid
 
 def flip(grid, x, y):
-    grid[x][y] = -grid[x][y]
-    return grid
+    grid_ = copy.deepcopy(grid)
+    grid_[x,y] = -1*grid[x,y]
+    return grid_
 
 def energy (x, y, grid, j):
     dim_x = np.shape(grid)[0]
@@ -25,46 +27,37 @@ def energy (x, y, grid, j):
     for coord in Relative_neighbours:
         x, y = x0 + coord[0], y0 + coord[1]
         equal_spin = (spin == grid[(dim_x + x)%dim_x][(dim_y + y)%dim_y])
-        
-        #print(equal_sgrid[(dim_x + x)%dim_x][pin)
         if equal_spin   : 
             energy = energy - 1 
-
         if not equal_spin:
             energy = energy + 1 
-
     return j*energy
 
 def sweep(grid, N, temp):
-    size = np.shape(grid)[0]
+    sz = np.shape(grid)[0]
+
     for n in range(N):
-        rand = np.random.randint(size, size=2)
+        rand = np.random.randint(sz, size=2)
         x, y = rand[0], rand[1]
-        print(x,y)
-        #spin = grid[x][y]
-
-        E_current = energy(x, y, grid, -1              )
-        E_flipped = energy(x, y, flip(grid, x, y),-1   )
-
-        
+        E_current = energy(x, y, grid, 1              )
+        E_flipped = energy(x, y, flip(grid, x, y),1   )
         delta_E = E_flipped - E_current
         r = np.exp(-delta_E/(k*temp))
-        #print(r)
-        if np.random.random() < np.minimum(1,r): 
-            #print('flip!')
-            # grid[x][y] = (-1) * grid[x][y]
-            grid = flip(grid, x, y)
-        else:
-            print("no flip!")
-    return grid
 
+        if np.random.random() < min(1,r): 
+            grid[x][y] = (-1) * grid[x][y]
+            grid = flip(grid, x, y)
+        #print(grid)
+    return grid
 
 #main
 random = np.random.default_rng()
 
 # Parameters than can be changed
-Sizes = np.array([4,8])
-Temps = [i for i in range(1,15)]
+Sizes   = np.array([4,8,16,32])
+Temps   = [10, 20, 30, 40, 10000]
+N_warm  = 10**2
+N_meas  = 10**3
 J = -1.0            # Ising lattice coupling constant 
 			        # J > 0: Ferromagnetic 
 			        # J < 0: Antiferromagnetic
@@ -80,22 +73,24 @@ binder       = np.zeros( len(Temps) )
 
 for size in Sizes:
     Num  = size**2
-    grid = rand_init(size)  
+    grid = rand_init(size) 
 
-    for j in range(len(Temps)):
-        Temp        = Temps[j]
+    for temp, j in zip(Temps, range(len(Temps))):
+        #Temp        = Temps[j]
         mag         = 0 
         mag_square  = 0 
         mag_fourth  = 0 
 
         # warm up sweeps
-        for n in range(size):
-            grid = sweep(grid, Num, Temp)
-        
+        for n in range(N_warm):
+            print("Warmup: ",round((n+1)/(10**4) * 100, 1),"%", end = "\r")
+            grid = sweep(grid, Num, temp)
+        print('\nwarmup complete ... ')
+
         # messungen
-        for n in range(size):
-            grid        = sweep(grid, Num, Temp)
-            #print(grid)
+        for n in range(N_meas):
+            print("Measurement: ",round((n+1)/(N_meas) * 100, 1),"%", end = "\r")
+            grid        = sweep(grid, Num, temp)
             mag         = mag + np.sum(grid)/Num
             mag_square  = mag_square + (np.sum(grid)/Num)**2 
             mag_fourth  = mag_fourth + (np.sum(grid)/Num)**4

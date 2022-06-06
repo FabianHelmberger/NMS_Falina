@@ -88,6 +88,7 @@ for size in Sizes:
 
         # warm up sweeps
         for n in range(N_warm):
+            
             print("Warmup: ",round((n+1)/(N_warm) * 100, 1),"%", end = "\r")
             grid = sweep(grid, Num, temp)
         print('\n', end = "\r")

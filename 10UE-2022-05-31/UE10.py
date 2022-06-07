@@ -3,20 +3,20 @@ import numpy as np
 from sympy import Lambda
 import copy
 import matplotlib.pyplot as plt
-
+import logging
+logging.basicConfig(filename="./data/log.txt")
 
 # read data
 Raw_data = np.loadtxt("SimMRimage.dat", dtype=int)
-
 X_max = (Raw_data[-1, 0])
 Y_max = (Raw_data[-1, 1])
 Data = np.reshape(Raw_data[:, 2], (X_max, Y_max))
 
 # Constants
-Lambda_ = 2
-T_f = 0.0001
-T_i = 100
-J = 1
+Lambda_ = 1.5
+T_f = 0.1
+T_i = 10
+J = 1.5
 Num = X_max * Y_max
 N_wamrup = 2
 Relative_neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]]
@@ -67,7 +67,6 @@ def sweep(nmr, Labels, T):
         
         rand = np.random.randint(1, [X_max, Y_max])
         x, y = rand[0], rand[1]
-        #print(n)
         grid_mut    = mutate(grid, x, y)
         E_current   = energy(nmr, grid, [x,y]   )
         E_mutated   = energy(nmr, grid_mut, [x,y])
@@ -84,24 +83,27 @@ def sweep(nmr, Labels, T):
 # initialise a random integer grid
 grid = np.random.randint(1, 6, size=(X_max, Y_max))
 
-T_i = 0.006103515625
-grid = np.load("./data/"+str(T_i)+".npy")
-
 temps   = [T_i]
 T       = T_i
 
 # Warm-up loop
-#for i in range(N_wamrup):
-    #grid = sweep(Data, grid, T)
+for i in range(N_wamrup):
+    grid = sweep(Data, grid, T)
 
 while (T > T_f):
-    
     T = T / Lambda_
+
+    print('now starting T = '+str(T))
     grid = sweep(Data, grid, T)
     outfile = './data/'+str(T)+'.npy'
     np.save(outfile, grid)
-
     temps.append(T)
+
+logging.debug('J = ',J)
+logging.debug('Temps = ')
+
+for T in temps:
+    logging.debug(T)
 
 plt.pcolormesh(grid)
 plt.show()

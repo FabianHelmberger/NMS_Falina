@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+import numpy as np 
+import matplotlib as pl
+
+
+=======
 from sys import stderr
 import numpy as np
 from sympy import Lambda
@@ -107,3 +113,4 @@ for T in temps:
 
 plt.pcolormesh(grid)
 plt.show()
+>>>>>>> e016e1aa99113f96d945ffa35d4485691d0a8949

@@ -56,10 +56,10 @@ def sweep(grid, N, temp):
 random = np.random.default_rng()
 
 # Parameters than can be changed
-Sizes   = np.array([4,8,16,32])
-Temps   = [i for i in range(1, 10)]
-N_warm  = int(10**1)
-N_meas  = int(10**2)
+Sizes   = np.array([4, 8, 16, 32])
+Temps   = [i for i in range(1,10)]
+N_warm  = int(10**2)
+N_meas  = int(10**3)
 J = -1.0            # Ising lattice coupling constant 
 			        # J > 0: Ferromagnetic 
 			        # J < 0: Antiferromagnetic
